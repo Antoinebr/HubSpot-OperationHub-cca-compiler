@@ -1,0 +1,19 @@
+{
+  "name": "cca-compiler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init": "node init.js",
+    "cca": "node run.js",
+    "build": "node build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sturdynut/i18n-phone-formatter": "^0.0.6",
+    "dotenv": "^16.0.3"
+  }
+}
