@@ -1,0 +1,14 @@
+{
+  "name": "check-if-free-email-domains",
+  "version": "1.0.0",
+  "description": "The idea of this Custom Coded Action is",
+  "main": "cca.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "free-email-domains": "^1.0.34"
+  }
+}
