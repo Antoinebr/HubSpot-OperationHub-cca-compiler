@@ -121,7 +121,7 @@ const format = require('@sturdynut/i18n-phone-formatter');
 And build the project by running 
 
 ```
-npm run buid name-of-the-folder
+npm run build name-of-the-folder
 ```
 
 This will create a ```dist/``` folder inside your project
