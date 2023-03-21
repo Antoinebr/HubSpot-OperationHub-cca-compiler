@@ -2,12 +2,6 @@ const firstnames = require('./firstnames.js');
 
 exports.main = async (event, callback) => {
 
-    let firstName = event.inputFields.firstName;
-
-    if (!firstName) throw new Error('firstName is not set, are you sure you put firstName in the "properties to include in code" ? ');
-    const result = (firstnames[firstName]) ? firstnames[firstName] : false;
-
-
     const email = event.inputFields.email;
     if (!email) throw new Error('email is not set, are you sure you put email in the "properties to include in code" ? ');
 
@@ -20,14 +14,17 @@ exports.main = async (event, callback) => {
     for (const chunk of chunks) {
 
         if (firstnames[chunk]) {
-            firstNameFound.push(chunk);
+            firstNameFound.push({
+                firstName: chunk,
+                gender: firstnames[chunk].gender
+            });
         }
     }
 
     callback({
         outputFields: {
-            gender: result ? result.gender : "N/A",
-            firstName: firstNameFound.length > -1 ? firstNameFound[0] : "N/A"
+            gender: firstNameFound.length > -1 ? firstNameFound[0].gender : "N/A",
+            firstName: firstNameFound.length > -1 ? firstNameFound[0].firstName : "N/A"
         }
     });
 
@@ -41,7 +38,7 @@ exports.main = async (event, callback) => {
  * @returns {array} - An array of the split string parts.
  */
 const splitString = (str) => {
-    return str.split(/[\s,\\-_./]+/);
+    return str.split(/[-_.]+/);
 }
 
 exports.splitString = splitString;
