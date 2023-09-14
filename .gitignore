@@ -15,3 +15,7 @@ variables.env.now
 .sass-cache 
 
 # Project specific
+
+key.json
+
+./*/node_modules/

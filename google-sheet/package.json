@@ -1,0 +1,19 @@
+{
+  "name": "google-sheet",
+  "version": "1.0.0",
+  "description": "The idea of this Custom Coded Action is",
+  "main": "cca.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "google-auth-library": "^8.9.0",
+    "google-spreadsheet": "^4.0.3"
+  }
+}

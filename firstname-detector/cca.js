@@ -7,6 +7,11 @@ exports.main = async (event, callback) => {
 
     const emailWithoutDomain = email.split('@')[0];
 
+    
+    const firstNameAndLastName = splitString(emailWithoutDomain);
+
+    if(firstNameAndLastName.length === 1) throw new Error(`${email} can't be splitted by a separator`);
+
     const chunks = splitString(emailWithoutDomain).map(chunk => capitalizeString(chunk));
 
     const firstNameFound = [];
@@ -20,6 +25,9 @@ exports.main = async (event, callback) => {
             });
         }
     }
+
+    if(firstNameFound.length === 0) throw new Error('The firstName was not in the database');
+
 
     callback({
         outputFields: {

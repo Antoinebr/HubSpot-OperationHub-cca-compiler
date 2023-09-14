@@ -3,6 +3,7 @@ exports.events = {
     //     objectId: 3401
     // },
     inputFields: {
-        email: "Luke.Moula@fake.com"
+        phoneNumber : "0698432387",
+        countryCode: "FR"
     }
 }

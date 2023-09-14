@@ -9,6 +9,12 @@ You can write your Custom Coded Action locally, as I mocked the specific functio
 **This project allows use the librairies you want even if they are not supported by HubSpot** [list of allowed librairies here](https://developers.hubspot.com/docs/api/workflows/custom-code-actions#:~:text=Node.js%20supported%20libraries)
 
 
+
+## Use case example
+
+Let's say you want to create a Custom Coded Action to detect if a phone number is correctly formated. The first option is to write the logic yourself, but this is quite inneficient. A better approach would be to look for an open source module online. Unfortunately with the Custom Coded Actions you can't import any library, as you can't just run "npm installs". 
+This project offers a solution to this issue, you can install the librairies you want locally, and the project will put everything in one file that will work in HubSpot. 
+
 ## How to use
 
 Clone the project and install the dependencies by running : 
@@ -23,10 +29,12 @@ Then create a .env file at the root of the project with your privateAppToken
 privateAppToken = "sdfsd-dsfsdf-wwxcwx-ffdsdfdsf-fsdffdsfs"
 ```
 
+Side note : you can name your private app Token the way you want, but you will have to adapt the variable name in your Custom Coded Action. 
+
 ### Create a new project 
 
 
-You have to initialize a new project by calling 
+You have to initialize a new project by calling, this will create a new folder. 
 
 ```
 npm run init <nameOfYourProject>
@@ -38,7 +46,7 @@ Like :
 npm run init my-new-custom-coded-action
 ```
 
-The template created contains a first file name cca.js, this is where you write your code. 
+The template created contains a file named cca.js, this is where you write your code. 
 
 
 
@@ -129,4 +137,4 @@ This will create a ```dist/``` folder inside your project
 
 ## How to deploy ?
 
-unfortunately there's no automated deployement, so copy and pste the ```dist/index.js``` content in the  Custom Coded Action block. 
+Unfortunately there's no automated deployement, so copy and paste the ```dist/index.js``` content in the  Custom Coded Action block. 

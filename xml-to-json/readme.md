@@ -21,4 +21,4 @@ This will create a ```dist/``` folder inside your project
 
 ## How to deploy ?
 
-unfortunately there's no automated deployement, so copy and pste the ```dist/index.js``` content in the  Custom Coded Action block. 
+Unfortunately there's no automated deployement, so copy and pste the ```dist/index.js``` content in the  Custom Coded Action block. 
