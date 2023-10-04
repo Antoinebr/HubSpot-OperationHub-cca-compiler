@@ -19,3 +19,8 @@ variables.env.now
 key.json
 
 ./*/node_modules/
+
+
+experimental*/
+
+googleAuthCreds.json
