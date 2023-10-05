@@ -2,61 +2,95 @@ const axios = require('axios');
 
 const GoogleSpreadsheet = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
-const creds = require('./googleAuthCreds.json'); // the file saved above
+
+
+
+/*
+ *
+ * Edit your Secret Name here  
+ */
+const SECRET_NAME = "privateAppTokenServicePortalAntoine"
+
+
+const SECRET_NAME_TO_USE = SECRET_NAME ? SECRET_NAME : "privateAppToken";
 
 const axiosConfig = {
     headers: {
-        authorization: `Bearer ${process.env.privateAppTokenServicePortalAntoine}`
+        authorization: `Bearer ${process.env[SECRET_NAME_TO_USE]}`
     }
 };
 
+
+if(!process.env[SECRET_NAME_TO_USE]) throw new Error('Your private APP token is missing... did you forget to add one ? Double check for typos too !');
+
+if(process.env[SECRET_NAME_TO_USE] === "") throw new Error('Your private APP token is empty... did you forget to add one ?');
 
 exports.main = async (event, callback) => {
 
     let backupUserAvailable = null;
 
-    const ticketOwnerId = event.inputFields.ticketOwnerId;
+    const ownerId = event.inputFields.ownerId;
+
+    if (!ownerId) throw new Error('ownerId is not set, are you sure you put owner with ownerId as name in the "properties to include in code" ? ');
 
     // convert onwnerId in email address 
-    const ticketOwnerInfos = await getUserDataById(ticketOwnerId).catch(axiosErrorHandler);
+    const ownerInfos = await getUserDataById(ownerId).catch(axiosErrorHandler);
 
-    if (!ticketOwnerInfos.data) throw new Error(`We failed to find the user with id ${ticketOwnerId}`);
+    if (!ownerInfos.data) throw new Error(`We failed to find the user with id ${ownerInfos}`);
 
-    const ticketOwnerEmail = ticketOwnerInfos.data.email;
+    const ownerEmail = ownerInfos.data.email;
 
-    console.log(`${ticketOwnerEmail} is the owner of this object`);
+    console.log(`${ownerEmail} is the owner of this object`);
 
-    console.log(`Checking if ${ticketOwnerEmail} is OOO`);
+    console.log(`Checking if ${ownerEmail} is OOO`);
 
     const SCOPES = [
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/drive.file',
     ];
 
+
+    if (event.inputFields.clientEmail === "") throw new Error('clientEmail is empty, did you add a clientEmail ?');
+    if (!event.inputFields.clientEmail) throw new Error('clientEmail is not set, did you add the custom block to set the clientEmail ?');
+
+
+    if (event.inputFields.privateKey === "") throw new Error('privateKey is empty, did you add a privateKey ?');
+    if (!event.inputFields.privateKey) throw new Error('privateKey is not set, did you add the custom block to set the privateKey ?');
+
+
     const jwt = new JWT({
-        email: creds.client_email,
-        key: creds.private_key,
+        email: event.inputFields.clientEmail,
+        key: event.inputFields.privateKey,
         scopes: SCOPES,
     });
 
-    const sheetId = "1BEJb3Esc-MwWSNLjvvTT5Y5snYDbypSaitW1K4mshaY";
+
+    if (!event.inputFields.sheetId) throw new Error('sheetId is not set, did you add the custom block to set the properties ?');
+
+    if (event.inputFields.sheetId === "") throw new Error('sheetId is empty, did you add a sheet id ?');
+
+
+    const sheetId = event.inputFields.sheetId;
+
+
     const doc = new GoogleSpreadsheet.GoogleSpreadsheet(sheetId, jwt);
 
     await doc.loadInfo(); // loads document properties and worksheets
 
     console.log(`The connected spreadhsheet title is ${doc.title}`);
 
+
     const sheet = doc.sheetsByTitle.ooo;
 
     const rows = await sheet.getRows();
 
-    const ownerEmailWeSearch = ticketOwnerEmail;
+    const ownerEmailWeSearch = ownerEmail;
 
     console.log('We are searching ', ownerEmailWeSearch);
 
-    const {user}= findUserInSpreadSheetByEmail(rows, ownerEmailWeSearch)
+    const { user } = findUserInSpreadSheetByEmail(rows, ownerEmailWeSearch)
 
-    if(!user){
+    if (!user) {
         console.log(`${ownerEmailWeSearch} is not in the OOO spreadsheet`)
         return
     }
@@ -66,10 +100,19 @@ exports.main = async (event, callback) => {
     const isOOO = isTheUserCurentlyOOO(oooStartDate, oooEndDate)
 
     if (isOOO) console.log(`${ownerEmailWeSearch} is currently OOO From ${oooStartDate} until ${oooEndDate}`);
-    
+
     // We set the return value with the backup individual we found in the spreashSheet
     backupUserAvailable = backupIndividual;
 
+
+    const userFound = await getUserInfosByEmail("steve_support@demospot.org").catch(axiosErrorHandler);
+
+    if (userFound.data && userFound.data.results && userFound.data.results.length > 0) {
+
+        const { userId } = userFound.data.results[0];
+
+        backupUserAvailable = userId;
+    }
 
 
     // If there's no backupIndividual but a team is set as a backup 
@@ -86,39 +129,39 @@ exports.main = async (event, callback) => {
             const backupTeamFound = teams.data.results.filter(team => team.name === backupTeam);
 
             // Let's remove the OOO individual from the userId List
-            const usersAvailable = [...backupTeamFound[0].userIds, ...backupTeamFound[0].secondaryUserIds].filter(userId => userId !== ticketOwnerId);
-            
+            const usersAvailable = [...backupTeamFound[0].userIds, ...backupTeamFound[0].secondaryUserIds].filter(userId => userId !== ownerId);
+
             console.log(`Users in the team : `, usersAvailable)
 
             // return a random user from the list 
-            const randomUserId = usersAvailable[Math.floor(Math.random() * ((usersAvailable.length-1) - 0 + 1)) + 0];
+            const randomUserId = usersAvailable[Math.floor(Math.random() * ((usersAvailable.length - 1) - 0 + 1)) + 0];
 
             console.log(`Random userId ${randomUserId}`);
 
 
             let isBackupUserFromTeamOOO = null;
-            
+
             console.log(`Testing if ${randomUserId} is OOO too...`);
 
             isBackupUserFromTeamOOO = await isUserIdOOO(randomUserId, rows);
-            
+
             console.log(`Random userId ${randomUserId} OOO status is ${isBackupUserFromTeamOOO}`);
 
             // if the backupUser in the team is not OOO than set the user as the available backup
-            if(!isBackupUserFromTeamOOO){
+            if (!isBackupUserFromTeamOOO) {
                 backupUserAvailable = randomUserId;
             }
-            
-            
-            while(isBackupUserFromTeamOOO === true){
+
+
+            while (isBackupUserFromTeamOOO === true) {
 
                 console.log(`The backup user from the team is also OOO... looking for an other backup in the team`);
 
-                const randomUserId = usersAvailable[Math.floor(Math.random() * ((usersAvailable.length-1) - 0 + 1)) + 0];
-                
+                const randomUserId = usersAvailable[Math.floor(Math.random() * ((usersAvailable.length - 1) - 0 + 1)) + 0];
+
                 isBackupUserFromTeamOOO = await isUserIdOOO(randomUserId, rows);
 
-                if(!isBackupUserFromTeamOOO){
+                if (!isBackupUserFromTeamOOO) {
                     backupUserAvailable = randomUserId;
                 }
 
@@ -126,8 +169,8 @@ exports.main = async (event, callback) => {
 
             }
 
-        
-        
+
+
         }
 
     }
@@ -147,7 +190,7 @@ exports.main = async (event, callback) => {
 
 const isUserIdOOO = async (userid, rows) => {
 
-    if(!userid) throw new Error('userid is not passed as a paramater');
+    if (!userid) throw new Error('userid is not passed as a paramater');
 
     const backupUserFromTeam = await getUserById(userid).catch(axiosErrorHandler);
 
@@ -159,22 +202,22 @@ const isUserIdOOO = async (userid, rows) => {
 
         try {
 
-            
 
-            const {user}= findUserInSpreadSheetByEmail(rows, email)
 
-            if(!user){
+            const { user } = findUserInSpreadSheetByEmail(rows, email)
+
+            if (!user) {
                 console.log(`${email} is not in the OOO spreadsheet`)
                 return false
             }
 
-            if(user) console.log(`${email} is in the OOO spreadsheet, checking the date...`);
+            if (user) console.log(`${email} is in the OOO spreadsheet, checking the date...`);
 
-            if(!user.oooStartDate || !user.oooEndDate) throw new Error(`There's no oooStartDate or oooEndDate in the spreasheet for ${email}`)
+            if (!user.oooStartDate || !user.oooEndDate) throw new Error(`There's no oooStartDate or oooEndDate in the spreasheet for ${email}`)
 
-            if(user.oooStartDate === "") throw new Error(`There's no oooStartDate in the spreasheet for ${email}`)
+            if (user.oooStartDate === "") throw new Error(`There's no oooStartDate in the spreasheet for ${email}`)
 
-            if(user.oooEndDate === "") throw new Error(`There's no oooEndDate in the spreasheet for ${email}`)
+            if (user.oooEndDate === "") throw new Error(`There's no oooEndDate in the spreasheet for ${email}`)
 
             const isOOO = isTheUserCurentlyOOO(user.oooStartDate, user.oooEndDate);
 
@@ -233,7 +276,7 @@ const findUserInSpreadSheetByEmail = (rows, emailWeSearch) => {
 
 const dateToTimestamp = (dateString) => {
 
-    if(!dateString) throw new Error(`dateString is not set we got ${typeof dateString}`)
+    if (!dateString) throw new Error(`dateString is not set we got ${typeof dateString}`)
     const dateParts = dateString.split("-");
     const dateObject = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
     return dateObject.getTime();
@@ -255,6 +298,18 @@ const getTeams = async () => {
     const endPoint = `https://api.hubapi.com/settings/v3/users/teams`;
     const data = await axios.get(endPoint, axiosConfig);
     return data;
+}
+
+const getUserInfosByEmail = async (email) => {
+
+    if (!email) throw new Error(`email is not set we got ${typeof email}`)
+
+    if (email === "") throw new Error(`email is empty we`)
+
+    const endPoint = `https://api.hubapi.com/crm/v3/owners/?email=${email}&limit=1&archived=false`;
+    const data = await axios.get(endPoint, axiosConfig);
+    return data;
+
 }
 
 /**

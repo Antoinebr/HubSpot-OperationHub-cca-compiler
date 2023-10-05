@@ -3,6 +3,6 @@ exports.events = {
     //     objectId: 3401
     // },
     inputFields: {
-        ticketOwnerId : 137395830
+        ownerId : 137395830
     }
 }

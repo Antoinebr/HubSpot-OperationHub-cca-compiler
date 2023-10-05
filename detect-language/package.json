@@ -1,0 +1,18 @@
+{
+  "name": "detect-language",
+  "version": "1.0.0",
+  "description": "The idea of this Custom Coded Action is",
+  "main": "cca.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "languagedetect": "^2.0.0"
+  }
+}

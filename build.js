@@ -12,7 +12,7 @@ if (!folderName) throw new error('Missing folder Name ! Provide the folderName a
 (async () => {
 
 
-    const { stdout, stderr } = await exec(`npx ncc build ./${folderName}/cca.js -o ./${folderName}/dist -m -e axios`);
+    const { stdout, stderr } = await exec(`npx ncc build ./${folderName}/cca.js -o ./${folderName}/dist -m `);
 
     console.log(stdout)
 

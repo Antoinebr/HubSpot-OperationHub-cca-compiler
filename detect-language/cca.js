@@ -1,42 +1,30 @@
-const format = require('@sturdynut/i18n-phone-formatter');
-
-/*
- *
- * Edit your Secret Name here  
- */
-const SECRET_NAME = "privateAppTokenServicePortalAntoine";
-
-
-const SECRET_NAME_TO_USE = SECRET_NAME ? SECRET_NAME : "privateAppToken";
-
-const axios = require('axios');
-
-const axiosConfig = {
-    headers: {
-        authorization: `Bearer ${process.env[SECRET_NAME_TO_USE]}`
-    }
-};
-
+const LanguageDetect = require('languagedetect');
 
 exports.main = async (event, callback) => {
 
+
+    const textToAnalyze = event.inputFields.textToAnalyze;
+
+    if (!textToAnalyze) throw new Error('textToAnalyze is not set, are you sure you put textToAnalyze in the "properties to include in code" ? ');
+
+
+    const lngDetector = new LanguageDetect();
+
+    const languageFound = lngDetector.detect(textToAnalyze,2);
+
+    if(languageFound.length === 0) throw new Error('We failed to indentify the language');
     
-    const phoneNumber = event.inputFields.phoneNumber;
+    const [language, confidance]= languageFound[0];
 
-    if (!phoneNumber) throw new Error('phoneNumber is not set, are you sure you put phoneNumber in the "properties to include in code" ? ');
+    if(!language) throw new Error('Error when identifing the language');
 
-
-    const countryCode = event.inputFields.countryCode;
-
-    if (!countryCode) throw new Error('countryCode is not set, are you sure you put country in the "properties to include in code" ? ');
-
-    
-    const formatedNumberFR = format.formatE164(countryCode, phoneNumber); // +14155552671
+    if(!confidance) throw new Error('Error when identifing the language no confidance data');
 
 
     callback({
         outputFields: {
-            formatedNumberFR
+            language,
+            confidance
         }
     });
 
