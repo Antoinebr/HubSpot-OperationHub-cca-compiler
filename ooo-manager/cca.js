@@ -4,14 +4,6 @@ const GoogleSpreadsheet = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
 
 
-
-/*
- *
- * Edit your Secret Name here  
- */
-const SECRET_NAME = "privateAppTokenServicePortalAntoine"
-
-
 const SECRET_NAME_TO_USE = SECRET_NAME ? SECRET_NAME : "privateAppToken";
 
 const axiosConfig = {
